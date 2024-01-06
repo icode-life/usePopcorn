@@ -1,5 +1,8 @@
 import { useState } from "react";
 
+// here I create an object containing a set of css properties to be passed at once 
+// and that are NOT subject to user choices via props
+// therefore, these objects are located outside the component but in the same file
 const containerStyle = {
     display: "flex",
     alignItems: "center", 
@@ -9,49 +12,70 @@ const starContainerStyle = {
     display: "flex"
 };
 
-const textStyle = {
-    lineHeight: "1",
-    margin: "0",
-};
-
-const starStyle = {
-    width: "48px",
-    height: "48px",
-    display: "block",
-    cursor: "pointer"
-}
-
-const StarRating = ({maxRating = 5}) => {
-    const [rating, setRating] = useState(0);
+// component creation
+const StarRating = ({ //list of props below
+    maxRating = 5, 
+    color = '#fcc419', 
+    size = 26, 
+    className = "", //the prop className has been added to allow a user to import a css class in order to change font for example
+    messages=[], // thid allow the user to pass in an array of messages to be displayed instead of a numeric rating
+    defaultRating=0, // this allows the user to set a default rating at init
+    onSetRating // this allows the user to pass a fonction to be able to access the state to match the rating of the component with an external piece of the user interface
+    }) => {
+    const [rating, setRating] = useState(defaultRating);
     const [hoverRating, setHoverRating] = useState(0); //helpful to manage stars becoming full at hover
 
+    // here are new css properties objects that might vary according to user selection via props
+    // they need to be located in the component to be accessible via props
+    const textStyle = {
+        lineHeight: "1",
+        margin: "0",
+        color, 
+        fontSize: {size}
+    };
+
     return(
-        <div style={containerStyle}>
+        <div style={containerStyle} className={className}>
             <div style={starContainerStyle}>
                 {Array.from({length: maxRating}, (_, i) => (
                 <Star 
                 key={i} 
-                onRate={() => setRating(i+1)} 
+                onRate={() => {
+                    setRating(i+1); 
+                    onSetRating(rating); //ici on exporte le rating pour que le user le récupère via la prop onSetRating
+                }} 
                 full={hoverRating ? hoverRating >= i+1 : rating >= i+1} // star becomes full if either there's a hover on it or, in the absence of hover, applies the actual rating
                 onHoverIn={() => setHoverRating(i+1)}
                 onHoverOut={() => setHoverRating(0)}
+                color={color}
+                size={size}
                 />))}
             </div>
-            <p style={textStyle}>{hoverRating || rating || "" }</p>
+            <p style={textStyle}>
+                {messages.length === maxRating ? messages[hoverRating ? hoverRating-1 : rating-1] : hoverRating || rating || "" }
+            </p>
         </div>
     )
 };
 export default StarRating;
 
-const Star = ({onRate, full, onHoverIn, onHoverOut}) => {
+//secondary component creation
+const Star = ({onRate, full, onHoverIn, onHoverOut, color, size}) => {
+    //css object
+    const starStyle = {
+        width: `${size}px`,
+        height: `${size}px`,
+        display: "block",
+        cursor: "pointer"
+    }
     return(
         //listeners are always set on a piece of JSX, never on a component itself
         <span style={starStyle} onClick={onRate} onMouseEnter={onHoverIn} onMouseLeave={onHoverOut}>
             { full ? <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
-                fill="#000"
-                stroke="#000"
+                fill={color}
+                stroke={color}
                 >
                 <path
                     d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
@@ -61,7 +85,7 @@ const Star = ({onRate, full, onHoverIn, onHoverOut}) => {
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="#000"
+                stroke={color}
                 >
                 <path
                     strokeLinecap="round"
