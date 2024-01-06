@@ -37,7 +37,7 @@ const StarRating = ({maxRating = 5}) => {
                 onHoverOut={() => setHoverRating(0)}
                 />))}
             </div>
-            <p style={textStyle}>{rating || "" }</p>
+            <p style={textStyle}>{hoverRating || rating || "" }</p>
         </div>
     )
 };
@@ -45,6 +45,7 @@ export default StarRating;
 
 const Star = ({onRate, full, onHoverIn, onHoverOut}) => {
     return(
+        //listeners are always set on a piece of JSX, never on a component itself
         <span style={starStyle} onClick={onRate} onMouseEnter={onHoverIn} onMouseLeave={onHoverOut}>
             { full ? <svg
                 xmlns="http://www.w3.org/2000/svg"
